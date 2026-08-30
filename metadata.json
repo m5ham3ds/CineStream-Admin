@@ -1,0 +1,6 @@
+{
+  "name": "CineStream Admin",
+  "description": "Admin panel for CineStream streaming app. Manage users, DRM, offline access, and push notifications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
