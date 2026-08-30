@@ -58,6 +58,34 @@ class LoginViewModel : ViewModel() {
                 }
             }
     }
+
+    fun signInWithGoogleToken(idToken: String) {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        error = null
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = task.exception?.message ?: "Google Sign-in failed"
+                    )
+                }
+            }
+    }
+
+    fun setGoogleSignInLoading(isLoading: Boolean) {
+        _uiState.value = _uiState.value.copy(isLoading = isLoading)
+    }
+
+    fun setError(error: String) {
+        _uiState.value = _uiState.value.copy(error = error, isLoading = false)
+    }
     
     fun logout() {
         auth.signOut()
