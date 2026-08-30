@@ -22,10 +22,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.ui.screens.ConfigScreen
 import com.example.ui.screens.DashboardScreen
+import com.example.ui.screens.LoginScreen
 import com.example.ui.screens.NotificationScreen
 import com.example.ui.screens.UserDetailScreen
+import com.google.firebase.auth.FirebaseAuth
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector?) {
+    object Login : Screen("login", "Login", null)
     object Dashboard : Screen("dashboard", "Dashboard", Icons.Default.Dashboard)
     object Config : Screen("config", "Config & OTA", Icons.Default.Settings)
     object Notifications : Screen("notifications", "Notifications", Icons.AutoMirrored.Filled.Send)
@@ -72,11 +75,20 @@ fun AppNavigation() {
             }
         }
     ) { innerPadding ->
+        val startDest = if (FirebaseAuth.getInstance().currentUser != null) Screen.Dashboard.route else Screen.Login.route
+
         NavHost(
             navController = navController,
-            startDestination = Screen.Dashboard.route,
+            startDestination = startDest,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Login.route) {
+                LoginScreen(onLoginSuccess = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                })
+            }
             composable(Screen.Dashboard.route) {
                 DashboardScreen(onUserClick = { userId ->
                     navController.navigate(Screen.UserDetail.createRoute(userId))

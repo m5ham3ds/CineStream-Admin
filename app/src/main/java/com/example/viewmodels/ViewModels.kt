@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,12 +27,12 @@ class DashboardViewModel(private val repository: AdminRepository = AdminReposito
         if (query.isBlank()) users else users.filter { it.username.contains(query, ignoreCase = true) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val totalUsers = combine(allUsers) { users -> users[0].size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val totalUsers = allUsers.map { it.size }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
     
     // Consider active if logged in within the last 30 days (approx)
-    val activeUsers = combine(allUsers) { users -> 
+    val activeUsers = allUsers.map { userList -> 
         val threshold = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
-        users[0].count { it.lastLoginTimestamp >= threshold }
+        userList.count { it.lastLoginTimestamp >= threshold }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val inactiveUsers = combine(totalUsers, activeUsers) { total, active -> total - active }
