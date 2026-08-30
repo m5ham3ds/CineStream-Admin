@@ -75,7 +75,11 @@ fun AppNavigation() {
             }
         }
     ) { innerPadding ->
-        val startDest = if (FirebaseAuth.getInstance().currentUser != null) Screen.Dashboard.route else Screen.Login.route
+        val startDest = try {
+            if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser != null) Screen.Dashboard.route else Screen.Login.route
+        } catch (e: Exception) {
+            Screen.Login.route
+        }
 
         NavHost(
             navController = navController,

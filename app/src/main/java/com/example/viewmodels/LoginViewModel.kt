@@ -16,10 +16,10 @@ data class LoginUiState(
 )
 
 class LoginViewModel : ViewModel() {
-    private val auth = FirebaseAuth.getInstance()
+    private val auth by lazy { FirebaseAuth.getInstance() }
     
     private val _uiState = MutableStateFlow(LoginUiState(
-        isLoggedIn = auth.currentUser != null
+        isLoggedIn = try { FirebaseAuth.getInstance().currentUser != null } catch (e: Exception) { false }
     ))
     val uiState = _uiState.asStateFlow()
 
