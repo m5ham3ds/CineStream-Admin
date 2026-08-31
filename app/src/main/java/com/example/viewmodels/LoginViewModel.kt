@@ -25,10 +25,18 @@ data class LoginUiState(
 class LoginViewModel : ViewModel() {
     private val auth by lazy { FirebaseAuth.getInstance() }
     
-    private val _uiState = MutableStateFlow(LoginUiState(
-        isLoggedIn = try { FirebaseAuth.getInstance().currentUser != null } catch (e: Exception) { false }
-    ))
+    private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        try {
+            _uiState.value = _uiState.value.copy(
+                isLoggedIn = FirebaseAuth.getInstance().currentUser != null
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     fun onEmailChanged(email: String) {
         _uiState.value = _uiState.value.copy(email = email, error = null)
@@ -166,20 +174,27 @@ class LoginViewModel : ViewModel() {
 
         _uiState.value = _uiState.value.copy(isResetLoading = true, resetError = null, resetMessage = null)
 
-        auth.sendPasswordResetEmail(emailTrimmed)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _uiState.value = _uiState.value.copy(
-                        isResetLoading = false,
-                        resetMessage = "Password reset email sent"
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        isResetLoading = false,
-                        resetError = task.exception?.message ?: "Failed to send reset email"
-                    )
+        try {
+            auth.sendPasswordResetEmail(emailTrimmed)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _uiState.value = _uiState.value.copy(
+                            isResetLoading = false,
+                            resetMessage = "Password reset email sent"
+                        )
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isResetLoading = false,
+                            resetError = task.exception?.message ?: "Failed to send reset email"
+                        )
+                    }
                 }
-            }
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isResetLoading = false,
+                resetError = "Reset Error: ${e.message}"
+            )
+        }
     }
     
     fun logout() {
