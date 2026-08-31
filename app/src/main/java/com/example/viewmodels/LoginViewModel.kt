@@ -12,7 +12,10 @@ data class LoginUiState(
     val password: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isLoggedIn: Boolean = false
+    val isLoggedIn: Boolean = false,
+    val isResetLoading: Boolean = false,
+    val resetMessage: String? = null,
+    val resetError: String? = null
 )
 
 class LoginViewModel : ViewModel() {
@@ -85,6 +88,35 @@ class LoginViewModel : ViewModel() {
 
     fun setError(error: String) {
         _uiState.value = _uiState.value.copy(error = error, isLoading = false)
+    }
+
+    fun clearResetMessages() {
+        _uiState.value = _uiState.value.copy(resetMessage = null, resetError = null)
+    }
+
+    fun resetPassword(email: String) {
+        val emailTrimmed = email.trim()
+        if (emailTrimmed.isEmpty()) {
+            _uiState.value = _uiState.value.copy(resetError = "Please enter your email address")
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(isResetLoading = true, resetError = null, resetMessage = null)
+
+        auth.sendPasswordResetEmail(emailTrimmed)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _uiState.value = _uiState.value.copy(
+                        isResetLoading = false,
+                        resetMessage = "Password reset email sent"
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isResetLoading = false,
+                        resetError = task.exception?.message ?: "Failed to send reset email"
+                    )
+                }
+            }
     }
     
     fun logout() {

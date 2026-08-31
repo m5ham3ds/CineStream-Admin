@@ -35,6 +35,8 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val webClientId = context.getString(R.string.default_web_client_id)
@@ -196,13 +198,64 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     TextButton(
-                        onClick = onLoginSuccess,
+                        onClick = { showForgotPasswordDialog = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Skip Login")
+                        Text("Forgot Password?")
                     }
                 }
             }
+        }
+        
+        if (showForgotPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showForgotPasswordDialog = false
+                    viewModel.clearResetMessages()
+                },
+                title = { Text("Reset Password") },
+                text = {
+                    Column {
+                        Text("Enter your email address to receive a password reset link.")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = resetEmail,
+                            onValueChange = { resetEmail = it },
+                            label = { Text("Email") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        )
+                        if (uiState.isResetLoading) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                        }
+                        if (uiState.resetError != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(uiState.resetError!!, color = MaterialTheme.colorScheme.error)
+                        }
+                        if (uiState.resetMessage != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(uiState.resetMessage!!, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { viewModel.resetPassword(resetEmail) },
+                        enabled = !uiState.isResetLoading
+                    ) {
+                        Text("Send")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showForgotPasswordDialog = false
+                        viewModel.clearResetMessages()
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
