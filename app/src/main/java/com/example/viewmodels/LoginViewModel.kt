@@ -2,7 +2,11 @@ package com.example.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.models.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -48,11 +52,7 @@ class LoginViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isLoggedIn = true,
-                        error = null
-                    )
+                    checkAndCreateUserProfile(auth.currentUser)
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -68,11 +68,7 @@ class LoginViewModel : ViewModel() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isLoggedIn = true,
-                        error = null
-                    )
+                    checkAndCreateUserProfile(auth.currentUser)
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -88,6 +84,59 @@ class LoginViewModel : ViewModel() {
 
     fun setError(error: String) {
         _uiState.value = _uiState.value.copy(error = error, isLoading = false)
+    }
+
+    private fun checkAndCreateUserProfile(user: FirebaseUser?) {
+        if (user == null) {
+            _uiState.value = _uiState.value.copy(isLoading = false, error = "User is null")
+            return
+        }
+
+        val firestore = FirebaseFirestore.getInstance()
+        val userRef = firestore.collection("users").document(user.uid)
+
+        userRef.get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val document = task.result
+                if (document != null && document.exists()) {
+                    // Profile exists, update last login and proceed
+                    userRef.update("lastLoginTimestamp", System.currentTimeMillis())
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        error = null
+                    )
+                } else {
+                    // Profile doesn't exist, create default profile
+                    val newUser = User(
+                        id = user.uid,
+                        username = user.displayName ?: user.email?.substringBefore("@") ?: "User",
+                        email = user.email ?: "",
+                        lastLoginTimestamp = System.currentTimeMillis()
+                    )
+                    userRef.set(newUser, SetOptions.merge())
+                        .addOnCompleteListener { setTask ->
+                            if (setTask.isSuccessful) {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    isLoggedIn = true,
+                                    error = null
+                                )
+                            } else {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    error = setTask.exception?.message ?: "Failed to create profile"
+                                )
+                            }
+                        }
+                }
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = task.exception?.message ?: "Failed to check profile"
+                )
+            }
+        }
     }
 
     fun clearResetMessages() {
