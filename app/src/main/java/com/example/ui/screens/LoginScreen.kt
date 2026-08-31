@@ -192,6 +192,15 @@ fun LoginScreen(
                     ) {
                         Text("Sign in with Google")
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    TextButton(
+                        onClick = onLoginSuccess,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Skip Login")
+                    }
                 }
             }
         }
