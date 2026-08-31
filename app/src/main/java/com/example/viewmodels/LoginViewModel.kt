@@ -64,7 +64,7 @@ class LoginViewModel : ViewModel() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        checkAndCreateUserProfile(auth.currentUser)
+                        checkAndCreateUserProfile(task.result?.user ?: auth.currentUser)
                     } else {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
@@ -95,7 +95,7 @@ class LoginViewModel : ViewModel() {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        checkAndCreateUserProfile(auth.currentUser)
+                        checkAndCreateUserProfile(task.result?.user ?: auth.currentUser)
                     } else {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
