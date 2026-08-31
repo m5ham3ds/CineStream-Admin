@@ -31,10 +31,13 @@ class LoginViewModel : ViewModel() {
     init {
         try {
             _uiState.value = _uiState.value.copy(
-                isLoggedIn = FirebaseAuth.getInstance().currentUser != null
+                isLoggedIn = FirebaseAuth.getInstance().currentUser != null,
+                error = com.example.AppState.firebaseInitError
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+            _uiState.value = _uiState.value.copy(
+                error = "Init: ${com.example.AppState.firebaseInitError ?: e.message}"
+            )
         }
     }
 
@@ -73,6 +76,37 @@ class LoginViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 error = "Login Error: ${e.message}"
+            )
+        }
+    }
+
+    fun signUp() {
+        val email = _uiState.value.email.trim()
+        val password = _uiState.value.password.trim()
+        
+        if (email.isEmpty() || password.isEmpty()) {
+            _uiState.value = _uiState.value.copy(error = "Please fill in all fields")
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+        try {
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        checkAndCreateUserProfile(auth.currentUser)
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = task.exception?.message ?: "Sign up failed"
+                        )
+                    }
+                }
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = "SignUp Error: ${e.message}"
             )
         }
     }

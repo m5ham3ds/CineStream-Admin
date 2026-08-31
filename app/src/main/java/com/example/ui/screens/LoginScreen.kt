@@ -143,6 +143,14 @@ fun LoginScreen(
                         }
                     }
 
+                    OutlinedButton(
+                        onClick = viewModel::signUp,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.isLoading && uiState.email.isNotBlank() && uiState.password.isNotBlank()
+                    ) {
+                        Text("Sign Up")
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
