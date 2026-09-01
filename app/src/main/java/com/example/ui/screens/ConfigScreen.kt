@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.viewmodels.ConfigViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfigScreen(viewModel: ConfigViewModel = viewModel()) {
     val config by viewModel.config.collectAsState()
@@ -22,18 +21,12 @@ fun ConfigScreen(viewModel: ConfigViewModel = viewModel()) {
     var ads by remember(config.defaultForcedAds) { mutableStateOf(config.defaultForcedAds.toString()) }
     var otaJson by remember(config.providersJson) { mutableStateOf(config.providersJson) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Global Configuration") })
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
             Text("Offline DRM Rules", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             Text("These settings apply to all users unless specifically overridden in their profile.", style = MaterialTheme.typography.bodySmall)
@@ -87,6 +80,5 @@ fun ConfigScreen(viewModel: ConfigViewModel = viewModel()) {
             }
             
             Spacer(modifier = Modifier.height(32.dp))
-        }
     }
 }

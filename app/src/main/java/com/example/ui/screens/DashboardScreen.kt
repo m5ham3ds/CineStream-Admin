@@ -19,7 +19,6 @@ import com.example.viewmodels.DashboardViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onUserClick: (String) -> Unit,
@@ -31,23 +30,11 @@ fun DashboardScreen(
     val inactiveUsers by viewModel.inactiveUsers.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("CineStream Admin") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Stats Cards
@@ -87,7 +74,6 @@ fun DashboardScreen(
             }
         }
     }
-}
 
 @Composable
 fun StatCard(title: String, value: String, modifier: Modifier = Modifier, valueColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface) {
