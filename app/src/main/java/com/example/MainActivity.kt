@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.ui.navigation.AppNavigation
-import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.AppTheme
 import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
     FirebaseApp.initializeApp(this)
     enableEdgeToEdge()
     setContent {
-      MyApplicationTheme {
+      AppTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             AppNavigation()
         }
@@ -26,4 +26,3 @@ class MainActivity : ComponentActivity() {
     }
   }
 }
-
